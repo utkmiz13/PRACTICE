@@ -1,0 +1,373 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <cstdlib>
+#include <ctime>
+using namespace std;
+
+class ATM {
+private:
+    string bankName;
+    string accountHolder;
+    string password;
+    string upiPin;
+    double balance;
+    string accountNumber;
+    bool isLoggedIn;
+    int attempts;
+    
+public:
+    ATM() {
+        bankName = "UTKARSH BANK OF INDIA";
+        accountHolder = "UTKARSH";
+        password = "1234";  // Default password for card authentication
+        upiPin = "123456";  // UPI PIN for all transactions
+        balance = 50000.00; // Starting balance
+        accountNumber = "UBI123456789";
+        isLoggedIn = false;
+        attempts = 0;
+        srand(time(0));
+    }
+    
+    void displayWelcome() {
+        cout << "\n" << string(50, '=') << endl;
+        cout << "        WELCOME TO ATM SERVICE" << endl;
+        cout << "      " << bankName << endl;
+        cout << string(50, '=') << endl;
+        cout << "Please insert your ATM card..." << endl;
+        cout << "Card inserted successfully!" << endl;
+        cout << string(50, '-') << endl;
+    }
+    
+    bool authenticateUser() {
+        string enteredPassword;
+        
+        while (attempts < 3) {
+            cout << "\nEnter your 4-digit ATM PIN: ";
+            cin >> enteredPassword;
+            
+            if (enteredPassword == password) {
+                isLoggedIn = true;
+                cout << "\nATM Authentication successful!" << endl;
+                cout << "Welcome, " << accountHolder << "!" << endl;
+                return true;
+            } else {
+                attempts++;
+                cout << "Incorrect ATM PIN! Attempts remaining: " << (3 - attempts) << endl;
+            }
+        }
+        
+        cout << "\nToo many incorrect attempts. Card blocked!" << endl;
+        cout << "Please contact your bank." << endl;
+        return false;
+    }
+    
+    bool verifyUPIPin(string operation) {
+        string enteredPin;
+        int upiAttempts = 0;
+        
+        while (upiAttempts < 3) {
+            cout << "\nEnter UPI PIN for " << operation << ": ";
+            cin >> enteredPin;
+            
+            if (enteredPin == upiPin) {
+                cout << "UPI PIN verified successfully!" << endl;
+                return true;
+            } else {
+                upiAttempts++;
+                cout << "Incorrect UPI PIN! Attempts remaining: " << (3 - upiAttempts) << endl;
+            }
+        }
+        
+        cout << "Too many incorrect UPI PIN attempts. Transaction cancelled!" << endl;
+        return false;
+    }
+    
+    void displayMenu() {
+        cout << "\n" << string(40, '=') << endl;
+        cout << "           MAIN MENU" << endl;
+        cout << string(40, '=') << endl;
+        cout << "1. Balance Inquiry" << endl;
+        cout << "2. Cash Withdrawal" << endl;
+        cout << "3. Cash Deposit" << endl;
+        cout << "4. UPI Payment" << endl;
+        cout << "5. Mini Statement" << endl;
+        cout << "6. Change ATM PIN" << endl;
+        cout << "7. Change UPI PIN" << endl;
+        cout << "8. Exit" << endl;
+        cout << string(40, '-') << endl;
+        cout << "Select option (1-8): ";
+    }
+    
+    void balanceInquiry() {
+        cout << "\n" << string(35, '=') << endl;
+        cout << "        BALANCE INQUIRY" << endl;
+        cout << string(35, '=') << endl;
+        
+        if (!verifyUPIPin("Balance Inquiry")) {
+            return;
+        }
+        
+        cout << "\nAccount Number: " << accountNumber << endl;
+        cout << "Account Holder: " << accountHolder << endl;
+        cout << "Available Balance: Rs. " << fixed << setprecision(2) << balance << endl;
+        cout << string(35, '=') << endl;
+    }
+    
+    void cashWithdrawal() {
+        double amount;
+        cout << "\n" << string(35, '=') << endl;
+        cout << "       CASH WITHDRAWAL" << endl;
+        cout << string(35, '=') << endl;
+        cout << "Available Balance: Rs. " << fixed << setprecision(2) << balance << endl;
+        cout << "\nQuick Cash Options:" << endl;
+        cout << "1. Rs. 500    2. Rs. 1000" << endl;
+        cout << "3. Rs. 2000   4. Rs. 5000" << endl;
+        cout << "5. Other Amount" << endl;
+        cout << "\nSelect option (1-5): ";
+        
+        int choice;
+        cin >> choice;
+        
+        switch(choice) {
+            case 1: amount = 500; break;
+            case 2: amount = 1000; break;
+            case 3: amount = 2000; break;
+            case 4: amount = 5000; break;
+            case 5:
+                cout << "Enter amount: Rs. ";
+                cin >> amount;
+                break;
+            default:
+                cout << "Invalid option!" << endl;
+                return;
+        }
+        
+        if (amount > balance) {
+            cout << "Insufficient balance!" << endl;
+            return;
+        } else if (amount <= 0) {
+            cout << "Invalid amount!" << endl;
+            return;
+        }
+        
+        if (!verifyUPIPin("Cash Withdrawal")) {
+            return;
+        }
+        
+        balance -= amount;
+        cout << "\nTransaction Successful!" << endl;
+        cout << "Amount Withdrawn: Rs. " << fixed << setprecision(2) << amount << endl;
+        cout << "Remaining Balance: Rs. " << fixed << setprecision(2) << balance << endl;
+        cout << "Transaction ID: ATM" << (rand() % 900000 + 100000) << endl;
+        cout << "Please collect your cash and card." << endl;
+    }
+    
+    void cashDeposit() {
+        double amount;
+        cout << "\n" << string(35, '=') << endl;
+        cout << "        CASH DEPOSIT" << endl;
+        cout << string(35, '=') << endl;
+        cout << "Enter deposit amount: Rs. ";
+        cin >> amount;
+        
+        if (amount <= 0) {
+            cout << "Invalid amount!" << endl;
+            return;
+        }
+        
+        if (!verifyUPIPin("Cash Deposit")) {
+            return;
+        }
+        
+        balance += amount;
+        cout << "\nDeposit Successful!" << endl;
+        cout << "Amount Deposited: Rs. " << fixed << setprecision(2) << amount << endl;
+        cout << "Updated Balance: Rs. " << fixed << setprecision(2) << balance << endl;
+        cout << "Transaction ID: DEP" << (rand() % 900000 + 100000) << endl;
+    }
+    
+    void upiPayment() {
+        double amount;
+        string recipient;
+        
+        cout << "\n" << string(35, '=') << endl;
+        cout << "        UPI PAYMENT" << endl;
+        cout << string(35, '=') << endl;
+        cout << "Enter recipient UPI ID: ";
+        cin >> recipient;
+        cout << "Enter amount: Rs. ";
+        cin >> amount;
+        
+        if (amount > balance) {
+            cout << "Insufficient balance!" << endl;
+            return;
+        } else if (amount <= 0) {
+            cout << "Invalid amount!" << endl;
+            return;
+        }
+        
+        if (!verifyUPIPin("UPI Payment")) {
+            return;
+        }
+        
+        balance -= amount;
+        cout << "\nUPI Payment Successful!" << endl;
+        cout << "Amount Paid: Rs. " << fixed << setprecision(2) << amount << endl;
+        cout << "To: " << recipient << endl;
+        cout << "Remaining Balance: Rs. " << fixed << setprecision(2) << balance << endl;
+        cout << "Transaction ID: UPI" << (rand() % 900000 + 100000) << endl;
+    }
+    
+    void miniStatement() {
+        cout << "\n" << string(40, '=') << endl;
+        cout << "         MINI STATEMENT" << endl;
+        cout << string(40, '=') << endl;
+        
+        if (!verifyUPIPin("Mini Statement")) {
+            return;
+        }
+        
+        cout << "\nAccount: " << accountNumber << endl;
+        cout << "Name: " << accountHolder << endl;
+        cout << string(40, '-') << endl;
+        cout << "Recent Transactions:" << endl;
+        cout << "1. ATM Withdrawal    Rs. 2000.00" << endl;
+        cout << "2. UPI Payment       Rs. 500.00" << endl;
+        cout << "3. Cash Deposit      Rs. 10000.00" << endl;
+        cout << "4. ATM Withdrawal    Rs. 1000.00" << endl;
+        cout << "5. UPI Payment       Rs. 250.00" << endl;
+        cout << string(40, '-') << endl;
+        cout << "Current Balance: Rs. " << fixed << setprecision(2) << balance << endl;
+        cout << string(40, '=') << endl;
+    }
+    
+    void changeATMPin() {
+        string oldPin, newPin, confirmPin;
+        
+        cout << "\n" << string(35, '=') << endl;
+        cout << "       CHANGE ATM PIN" << endl;
+        cout << string(35, '=') << endl;
+        cout << "Enter current ATM PIN: ";
+        cin >> oldPin;
+        
+        if (oldPin != password) {
+            cout << "Incorrect current ATM PIN!" << endl;
+            return;
+        }
+        
+        if (!verifyUPIPin("PIN Change")) {
+            return;
+        }
+        
+        cout << "Enter new 4-digit ATM PIN: ";
+        cin >> newPin;
+        cout << "Confirm new ATM PIN: ";
+        cin >> confirmPin;
+        
+        if (newPin == confirmPin && newPin.length() == 4) {
+            password = newPin;
+            cout << "ATM PIN changed successfully!" << endl;
+        } else {
+            cout << "PIN mismatch or invalid format!" << endl;
+        }
+    }
+    
+    void changeUPIPin() {
+        string oldPin, newPin, confirmPin;
+        
+        cout << "\n" << string(35, '=') << endl;
+        cout << "       CHANGE UPI PIN" << endl;
+        cout << string(35, '=') << endl;
+        cout << "Enter current UPI PIN: ";
+        cin >> oldPin;
+        
+        if (oldPin != upiPin) {
+            cout << "Incorrect current UPI PIN!" << endl;
+            return;
+        }
+        
+        cout << "Enter new 6-digit UPI PIN: ";
+        cin >> newPin;
+        cout << "Confirm new UPI PIN: ";
+        cin >> confirmPin;
+        
+        if (newPin == confirmPin && newPin.length() == 6) {
+            upiPin = newPin;
+            cout << "UPI PIN changed successfully!" << endl;
+        } else {
+            cout << "PIN mismatch or invalid format! UPI PIN must be 6 digits." << endl;
+        }
+    }
+    
+    void processTransaction() {
+        if (!authenticateUser()) {
+            return;
+        }
+        
+        int choice;
+        do {
+            displayMenu();
+            cin >> choice;
+            
+            switch(choice) {
+                case 1:
+                    balanceInquiry();
+                    break;
+                case 2:
+                    cashWithdrawal();
+                    break;
+                case 3:
+                    cashDeposit();
+                    break;
+                case 4:
+                    upiPayment();
+                    break;
+                case 5:
+                    miniStatement();
+                    break;
+                case 6:
+                    changeATMPin();
+                    break;
+                case 7:
+                    changeUPIPin();
+                    break;
+                case 8:
+                    cout << "\n" << string(40, '=') << endl;
+                    cout << "Thank you for using " << bankName << endl;
+                    cout << "Please collect your card." << endl;
+                    cout << "Have a great day!" << endl;
+                    cout << string(40, '=') << endl;
+                    return;
+                default:
+                    cout << "Invalid option! Please try again." << endl;
+            }
+            
+            cout << "\nPress Enter to continue...";
+            cin.ignore();
+            cin.get();
+            
+        } while(choice != 8);
+    }
+};
+
+int main() {
+    ATM atmMachine;
+    
+    cout << "\n\n";
+    cout << "    ╔═══════════════════════════════════╗" << endl;
+    cout << "    ║                                   ║" << endl;
+    cout << "    ║   UTKARSH BANK OF INDIA           ║" << endl;
+    cout << "    ║                                   ║" << endl;
+    cout << "    ║   CARD NO: **** **** **** 6789    ║" << endl;
+    cout << "    ║   VALID THRU: 12/28               ║" << endl;
+    cout << "    ║   UTKARSH                         ║" << endl;
+    cout << "    ║                            [CHIP] ║" << endl;
+    cout << "    ╚═══════════════════════════════════╝" << endl;
+    
+ 
+    atmMachine.displayWelcome();
+    atmMachine.processTransaction();
+    
+    return 0;
+}
